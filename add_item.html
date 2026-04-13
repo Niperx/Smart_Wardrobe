@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Добавить вещь — Умный гардероб</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>Новая вещь</h1>
+    <p class="subtitle">Добавьте в гардероб</p>
+  </header>
+  <main class="container">
+    <form class="card" id="form-item">
+      <label>Название<input name="name" required /></label>
+      <label>Тип
+        <select name="type" required>
+          <option value="top">Верх</option>
+          <option value="bottom">Низ</option>
+          <option value="shoes">Обувь</option>
+          <option value="outer">Верхняя одежда</option>
+        </select>
+      </label>
+      <label>Цвет<input name="color" required /></label>
+      <label>Сезон
+        <select name="season">
+          <option value="all">Всесезон</option>
+          <option value="summer">Лето</option>
+          <option value="winter">Зима</option>
+          <option value="spring">Весна</option>
+          <option value="autumn">Осень</option>
+        </select>
+      </label>
+      <label>Фото<input type="file" name="photo" accept="image/*" /></label>
+      <button type="submit" class="btn primary">Сохранить</button>
+      <p id="form-msg" class="msg"></p>
+    </form>
+    <nav class="bottom-nav">
+      <a class="nav-link" href="/">Главная</a>
+      <a class="nav-link active" href="/add_item.html">Гардероб</a>
+      <a class="nav-link" href="/schedule.html">Уроки</a>
+    </nav>
+  </main>
+  <script>
+    document.getElementById("form-item").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const photo = fd.get("photo");
+      let photoData = null;
+      if (photo && photo.size) {
+        const b64 = await new Promise((res, rej) => {
+          const r = new FileReader();
+          r.onload = () => res(r.result);
+          r.onerror = rej;
+          r.readAsDataURL(photo);
+        });
+        photoData = b64;
+      }
+      const body = {
+        name: fd.get("name"),
+        type: fd.get("type"),
+        color: fd.get("color"),
+        season: fd.get("season"),
+        photo: photoData,
+      };
+      const msg = document.getElementById("form-msg");
+      msg.textContent = "Сохранение…";
+      try {
+        const r = await fetch("/api/items", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        const data = await r.json();
+        if (!r.ok) throw new Error(data.error || r.status);
+        msg.textContent = "Сохранено. Переход на главную…";
+        setTimeout(() => (location.href = "/"), 800);
+      } catch (err) {
+        msg.textContent = err.message || String(err);
+      }
+    });
+  </script>
+  <style>
+    label { display: block; margin-bottom: 0.75rem; font-weight: 600; font-size: 0.9rem; }
+    input, select { width: 100%; margin-top: 0.35rem; padding: 0.5rem; border-radius: 8px; border: 1px solid var(--border); }
+  </style>
+</body>
+</html>

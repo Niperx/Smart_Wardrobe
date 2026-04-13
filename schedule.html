@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Расписание — Умный гардероб</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>Расписание</h1>
+    <p class="subtitle">Уроки на сегодня</p>
+  </header>
+  <main class="container">
+    <section class="card" id="schedule-editor">
+      <div id="rows"></div>
+      <button type="button" class="btn secondary" id="btn-add">+ Урок</button>
+      <button type="button" class="btn primary" id="btn-save">Сохранить</button>
+      <p id="sched-msg" class="msg"></p>
+    </section>
+    <nav class="bottom-nav">
+      <a class="nav-link" href="/">Главная</a>
+      <a class="nav-link" href="/add_item.html">Гардероб</a>
+      <a class="nav-link active" href="/schedule.html">Уроки</a>
+    </nav>
+  </main>
+  <script>
+    const activityRu = { sitting: "сидячая", sports: "спорт", walking: "прогулка", mixed: "смешанная" };
+
+    function rowTpl(i, lesson) {
+      const sub = lesson ? lesson.subject : "";
+      const act = lesson ? lesson.activity : "sitting";
+      return `<div class="row" style="margin-bottom:0.75rem;padding:0.5rem;border:1px solid var(--border);border-radius:8px;">
+        <input placeholder="Предмет" value="${sub.replace(/"/g, "&quot;")}" data-f="subject" style="width:100%;margin-bottom:0.35rem;padding:0.4rem"/>
+        <select data-f="activity">${["sitting","sports","walking","mixed"].map(a => `<option value="${a}" ${a===act?"selected":""}>${activityRu[a]}</option>`).join("")}</select>
+      </div>`;
+    }
+
+    async function load() {
+      const r = await fetch("/api/schedule");
+      const data = await r.json();
+      const lessons = data.lessons || [];
+      const box = document.getElementById("rows");
+      if (!lessons.length) {
+        box.innerHTML = rowTpl(0, null);
+        return;
+      }
+      box.innerHTML = lessons.map((L, i) => rowTpl(i, L)).join("");
+    }
+
+    function collect() {
+      const rows = document.querySelectorAll("#rows .row");
+      const lessons = [];
+      rows.forEach((row) => {
+        const sub = row.querySelector('[data-f="subject"]').value.trim() || "Урок";
+        const act = row.querySelector('[data-f="activity"]').value;
+        lessons.push({ subject: sub, activity: act });
+      });
+      return lessons;
+    }
+
+    document.getElementById("btn-add").addEventListener("click", () => {
+      document.getElementById("rows").insertAdjacentHTML("beforeend", rowTpl(0, null));
+    });
+
+    document.getElementById("btn-save").addEventListener("click", async () => {
+      const msg = document.getElementById("sched-msg");
+      msg.textContent = "Сохранение…";
+      try {
+        const r = await fetch("/api/schedule", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ lessons: collect() }),
+        });
+        const data = await r.json();
+        if (!r.ok) throw new Error(data.error || r.status);
+        msg.textContent = "Сохранено.";
+      } catch (e) {
+        msg.textContent = e.message || String(e);
+      }
+    });
+
+    load();
+  </script>
+</body>
+</html>

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Умный гардероб</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>Умный гардероб</h1>
+    <p class="subtitle">Комплект на сегодня</p>
+  </header>
+
+  <main class="container">
+    <section class="weather card" id="weather-block" aria-live="polite">
+      <h2>Погода</h2>
+      <p id="weather-text">Загрузка…</p>
+      <button type="button" class="btn secondary" id="btn-refresh-weather">Обновить прогноз</button>
+    </section>
+
+    <section class="outfit card" id="outfit-block">
+      <h2>Рекомендованный комплект</h2>
+      <div id="outfit-content" class="outfit-grid">Загрузка…</div>
+      <div class="actions">
+        <button type="button" class="btn primary" id="btn-wear">Надеть этот комплект</button>
+        <button type="button" class="btn secondary" id="btn-wash">Постирать всё грязное</button>
+      </div>
+      <p id="action-msg" class="msg" role="status"></p>
+    </section>
+
+    <section class="schedule card">
+      <h2>Расписание</h2>
+      <ul id="schedule-list" class="schedule-list"></ul>
+      <a class="link" href="/schedule.html">Изменить расписание</a>
+    </section>
+
+    <nav class="bottom-nav">
+      <a class="nav-link active" href="/">Главная</a>
+      <a class="nav-link" href="/add_item.html">Гардероб</a>
+      <a class="nav-link" href="/schedule.html">Уроки</a>
+    </nav>
+  </main>
+
+  <script src="/script.js"></script>
+</body>
+</html>
